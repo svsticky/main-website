@@ -27,11 +27,14 @@ blok.board_number = Number(blok.board_number);
 
   <div class="bg-white shadow rounded-2xl p-8 mb-8 border border-neutral-100">
     <div class="mb-6">
-      <h1 class="text-3xl font-extrabold" style={{ color: blok.colour }}>
-        {is_last
-          ? (language === undefined ? "Huidig bestuur" : "Current board")
-          : (language === undefined ? "Bestuur" : "Board")} {blok.board_number}
-      </h1>
+      <div class="flex justify-between">
+        <h1 class="text-3xl font-extrabold" style={{ color: blok.colour }}>
+          {is_last
+            ? (language === undefined ? "Huidig bestuur" : "Current board")
+            : (language === undefined ? "Bestuur" : "Board")} {blok.board_number}
+        </h1>
+        <p id="board-color" data-color={blok.colour} style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> {(language === undefined ? "Bestuurskleur" : "Board Color")}</p>
+      </div>
       {!!blok.year && <p class="text-neutral-500">{blok.year}</p>}
     </div>
 
@@ -79,4 +82,11 @@ blok.board_number = Number(blok.board_number);
         ))}
       </div>}
   </div>
+
+  <script>
+    const el = document.querySelector('#board-color');
+    el.addEventListener('click', function() {
+      navigator.clipboard.writeText(el.dataset.color);
+    });
+  </script>
 </main>
