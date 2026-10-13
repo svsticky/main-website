@@ -33,7 +33,7 @@ blok.board_number = Number(blok.board_number);
             ? (language === undefined ? "Huidig bestuur" : "Current board")
             : (language === undefined ? "Bestuur" : "Board")} {blok.board_number}
         </h1>
-        <p id="board-color" data-color={blok.colour} style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> {(language === undefined ? "Bestuurskleur" : "Board Color")}</p>
+        <p id="board-color" data-color={blok.colour} style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> {(language === undefined ? "Bestuurskleur: " : "Board Color: ")} {blok.colour}</p>
       </div>
       {!!blok.year && <p class="text-neutral-500">{blok.year}</p>}
     </div>
