@@ -25,62 +25,78 @@ blok.board_number = Number(blok.board_number);
     </span>
   </a>
 
-  <div class="bg-white shadow rounded-2xl p-8 mb-8 border border-neutral-100">
-    <div class="mb-6">
-      <div class="flex justify-between">
-        <h1 class="text-3xl font-extrabold" style={{ color: blok.colour }}>
-          {is_last
-            ? (language === undefined ? "Huidig bestuur" : "Current board")
-            : (language === undefined ? "Bestuur" : "Board")} {blok.board_number}
-        </h1>
-        <p id="board-color" data-color={blok.colour} style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> {(language === undefined ? "Bestuurskleur: " : "Board Color: ")} {blok.colour}</p>
-      </div>
-      {!!blok.year && <p class="text-neutral-500">{blok.year}</p>}
+  <div class="mb-6">
+    <div class="flex justify-between">
+      {blok.board_number >= 1 && (
+        <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${blok.board_number - 1}`} style={{ color: blok.colour }} class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
+          <i class="my-auto fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+          {language === undefined ? " Vorig bestuur: " : " Previous baord: "} {blok.board_number - 1}
+        </a>
+      )}
+      {!is_last && (
+        <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${blok.board_number + 1}`} style={{ color: blok.colour }} class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
+          {language === undefined ? "Volgend bestuur: " : "Next baord: "} {blok.board_number + 1} { }
+          <i class="my-auto fas fa-arrow-right group-hover:-translate-x-1 transition-transform"></i>
+        </a>
+      )}
     </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-      <figure class="my-auto">
-        <Image src={blok.photo.filename} width={800} height={800} fit="contain" class="w-full h-auto rounded-xl" alt="Bestuursfoto" />
-        {!!blok.photo.title && <figcaption class="text-center text-neutral-600 mt-1">{blok.photo.title}</figcaption>}
-      </figure>
-
-      <div class="flex flex-col gap-6">
-        <div>
-          <h3 class="text-xl font-extrabold mb-1" style={{ color: blok.colour }}>{language === undefined ? "O.d.z." : "Motto"}</h3>
-          <p class="italic">"{blok.zinspreuk}"</p>
+    <div class="bg-white shadow rounded-2xl p-8 mb-8 border border-neutral-100">
+      <div class="mb-6">
+        <div class="flex justify-between">
+          <h1 class="text-3xl font-extrabold" style={{ color: blok.colour }}>
+            {is_last
+              ? (language === undefined ? "Huidig bestuur" : "Current board")
+              : (language === undefined ? "Bestuur" : "Board")} {blok.board_number}
+          </h1>
+          <p id="board-color" data-color={blok.colour} style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> {(language === undefined ? "Bestuurskleur: " : "Board Color: ")} {blok.colour}</p>
         </div>
-        <div>
-          <h3 class="text-xl font-extrabold mb-1" style={{ color: blok.colour }}>
-            {language === undefined ? "Bestuursleden" : "Board members"}
-          </h3>
-          <RichText content={blok.board_members} />
+        {!!blok.year && <p class="text-neutral-500">{blok.year}</p>}
+      </div>
+  
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <figure class="my-auto">
+          <Image src={blok.photo.filename} width={800} height={800} fit="contain" class="w-full h-auto rounded-xl" alt="Bestuursfoto" />
+          {!!blok.photo.title && <figcaption class="text-center text-neutral-600 mt-1">{blok.photo.title}</figcaption>}
+        </figure>
+  
+        <div class="flex flex-col gap-6">
+          <div>
+            <h3 class="text-xl font-extrabold mb-1" style={{ color: blok.colour }}>{language === undefined ? "O.d.z." : "Motto"}</h3>
+            <p class="italic">"{blok.zinspreuk}"</p>
+          </div>
+          <div>
+            <h3 class="text-xl font-extrabold mb-1" style={{ color: blok.colour }}>
+              {language === undefined ? "Bestuursleden" : "Board members"}
+            </h3>
+            <RichText content={blok.board_members} />
+          </div>
         </div>
       </div>
-    </div>
-
-    {!!blok.members?.length &&
-      <div class="mt-10 flex flex-col gap-6">
-        {blok.members.map((member: any, idx: number) => (
-          <a href={member.linkedin_url.cached_url} target="_blank" rel="noopener noreferrer" class="group block" {...storyblokEditable(member)}>
-            <div class={`flex flex-col ${idx % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"} items-center gap-6 rounded-xl border border-neutral-200 p-4`}>
-              <Image
-                src={member.photo.filename}
-                height={128}
-                width={128}
-                alt={member.name}
-                class="w-32 h-32 shrink-0 rounded-full object-cover border-4 transition group-hover:-translate-y-1 group-hover:shadow-lg"
-                style={{ "border-color": blok.colour }}
-              />
-              <div class={`text-center ${idx % 2 === 0 ? "md:text-left" : "md:text-right"}`}>
-                <h4 class="font-extrabold text-lg" style={{ color: blok.colour }}>
-                  {member.name}{!!member.function && ` - ${member.function}`}
-                </h4>
-                <RichText class="mt-1 text-neutral-700" content={member.bio} />
+  
+      {!!blok.members?.length &&
+        <div class="mt-10 flex flex-col gap-6">
+          {blok.members.map((member: any, idx: number) => (
+            <a href={member.linkedin_url.cached_url} target="_blank" rel="noopener noreferrer" class="group block" {...storyblokEditable(member)}>
+              <div class={`flex flex-col ${idx % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"} items-center gap-6 rounded-xl border border-neutral-200 p-4`}>
+                <Image
+                  src={member.photo.filename}
+                  height={128}
+                  width={128}
+                  alt={member.name}
+                  class="w-32 h-32 shrink-0 rounded-full object-cover border-4 transition group-hover:-translate-y-1 group-hover:shadow-lg"
+                  style={{ "border-color": blok.colour }}
+                />
+                <div class={`text-center ${idx % 2 === 0 ? "md:text-left" : "md:text-right"}`}>
+                  <h4 class="font-extrabold text-lg" style={{ color: blok.colour }}>
+                    {member.name}{!!member.function && ` - ${member.function}`}
+                  </h4>
+                  <RichText class="mt-1 text-neutral-700" content={member.bio} />
+                </div>
               </div>
-            </div>
-          </a>
-        ))}
-      </div>}
+            </a>
+          ))}
+        </div>}
+    </div>
   </div>
 
   <script>
