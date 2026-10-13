@@ -27,12 +27,10 @@ blok.board_number = Number(blok.board_number);
 
   <div class="mb-6">
     <div class="flex justify-between">
-      {blok.board_number >= 1 && (
-        <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${blok.board_number - 1}`} style={{ color: blok.colour }} class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
+        <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${blok.board_number - 1}`} style={{ color: blok.colour, visibility: blok.board_number <= 1 ? "hidden" : "inherit" }} class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
           <i class="my-auto fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
           {language === undefined ? " Vorig bestuur: " : " Previous baord: "} {blok.board_number - 1}
         </a>
-      )}
       {!is_last && (
         <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${blok.board_number + 1}`} style={{ color: blok.colour }} class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
           {language === undefined ? "Volgend bestuur: " : "Next baord: "} {blok.board_number + 1} { }
@@ -48,7 +46,9 @@ blok.board_number = Number(blok.board_number);
               ? (language === undefined ? "Huidig bestuur" : "Current board")
               : (language === undefined ? "Bestuur" : "Board")} {blok.board_number}
           </h1>
-          <p id="board-color" data-color={blok.colour} style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> {(language === undefined ? "Bestuurskleur: " : "Board Color: ")} {blok.colour}</p>
+          <button data-color={blok.colour} id="board-color" class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
+            <p style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> <span data-language={language} id="copy-text">{(language === undefined ? "Bestuurskleur: " : "Board Color: ")} {blok.colour}</span></p>
+          </button>
         </div>
         {!!blok.year && <p class="text-neutral-500">{blok.year}</p>}
       </div>
@@ -101,8 +101,23 @@ blok.board_number = Number(blok.board_number);
 
   <script>
     const el = document.querySelector('#board-color');
+    const textNode = document.querySelector('span#copy-text');
+    const revertText = textNode.innerText;
+    let timeoutID = undefined;
     el.addEventListener('click', function() {
       navigator.clipboard.writeText(el.dataset.color);
+      textNode.innerText = textNode.dataset.language === undefined ? "Gekopieerd!" : "Copied!";
+
+      // If we're already waiting, stop waiting and start a new timeout
+      if (timeoutID) {
+        clearTimeout(timeoutID);
+        timeoutID = undefined;
+      }
+
+      timeoutID = setTimeout(function () {
+        textNode.innerText = revertText;
+        timeoutID = undefined;
+      }, 1000);
     });
   </script>
 </main>
