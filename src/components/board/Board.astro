@@ -15,6 +15,19 @@ const current_board = (await getStories({
 const is_last = Number(current_board.content.board_number) === Number(blok.board_number);
 
 blok.board_number = Number(blok.board_number);
+
+const [prevBoard, nextBoard] = await Promise.all(
+  [blok.board_number - 1, blok.board_number + 1].map(async (n) =>
+    (await getStories({
+      version: 'published',
+      starts_with: 'vereniging/bestuur',
+      content_type: 'board',
+      filter_query: { board_number: { in_int: n } },
+      per_page: 1
+    })).data.stories[0]
+  )
+);
+
 ---
 
 <main class="w-[92%] sm:w-3/4 mx-auto py-8 min-h-[calc(100vh-160px)]" {...storyblokEditable(blok)}>
@@ -27,14 +40,16 @@ blok.board_number = Number(blok.board_number);
 
   <div class="mb-6">
     <div class="flex justify-between">
-        <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${blok.board_number - 1}`} style={{ color: blok.colour, visibility: blok.board_number <= 1 ? "hidden" : "inherit" }} class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
+      {prevBoard ? (
+        <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${prevBoard.content.board_number}`} style={{ color: prevBoard.content.colour }} class="group items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100">
           <i class="my-auto fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
-          {language === undefined ? " Vorig bestuur: " : " Previous baord: "} {blok.board_number - 1}
+          {language === undefined ? " Vorig bestuur: " : " Previous board: "}{prevBoard.content.board_number}
         </a>
-      {!is_last && (
-        <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${blok.board_number + 1}`} style={{ color: blok.colour }} class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
-          {language === undefined ? "Volgend bestuur: " : "Next baord: "} {blok.board_number + 1} { }
-          <i class="my-auto fas fa-arrow-right group-hover:-translate-x-1 transition-transform"></i>
+      ) : <span />}
+      {nextBoard && (
+        <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${nextBoard.content.board_number}`} style={{ color: nextBoard.content.colour }} class="group items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100">
+          {language === undefined ? "Volgend bestuur: " : "Next board: "}{nextBoard.content.board_number}
+          <i class="my-auto fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
         </a>
       )}
     </div>
