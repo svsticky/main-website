@@ -27,11 +27,16 @@ blok.board_number = Number(blok.board_number);
 
   <div class="bg-white shadow rounded-2xl p-8 mb-8 border border-neutral-100">
     <div class="mb-6">
-      <h1 class="text-3xl font-extrabold" style={{ color: blok.colour }}>
-        {is_last
-          ? (language === undefined ? "Huidig bestuur" : "Current board")
-          : (language === undefined ? "Bestuur" : "Board")} {blok.board_number}
-      </h1>
+      <div class="flex justify-between">
+        <h1 class="text-3xl font-extrabold" style={{ color: blok.colour }}>
+          {is_last
+            ? (language === undefined ? "Huidig bestuur" : "Current board")
+            : (language === undefined ? "Bestuur" : "Board")} {blok.board_number}
+        </h1>
+        <button data-color={blok.colour} id="board-color" class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
+          <p style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> <span data-language={language} id="copy-text">{(language === undefined ? "Bestuurskleur: " : "Board Color: ")} {blok.colour}</span></p>
+        </button>
+      </div>
       {!!blok.year && <p class="text-neutral-500">{blok.year}</p>}
     </div>
 
@@ -79,4 +84,26 @@ blok.board_number = Number(blok.board_number);
         ))}
       </div>}
   </div>
+
+  <script>
+    const el = document.querySelector('#board-color');
+    const textNode = document.querySelector('span#copy-text');
+    const revertText = textNode.innerText;
+    let timeoutID = undefined;
+    el.addEventListener('click', function() {
+      navigator.clipboard.writeText(el.dataset.color);
+      textNode.innerText = textNode.dataset.language === undefined ? "Gekopieerd!" : "Copied!";
+
+      // If we're already waiting, stop waiting and start a new timeout
+      if (timeoutID) {
+        clearTimeout(timeoutID);
+        timeoutID = undefined;
+      }
+
+      timeoutID = setTimeout(function () {
+        textNode.innerText = revertText;
+        timeoutID = undefined;
+      }, 1000);
+    });
+  </script>
 </main>
