@@ -1,53 +1,90 @@
 ---
 import { storyblokEditable } from '@storyblok/astro';
 import { Image } from 'astro:assets';
-import { getStories } from '../../storyblok';
+import { getAll } from '../../storyblok';
 const { blok, language } = Astro.props;
 import RichText from '../basics/RichText.astro';
 
-const current_board = (await getStories({
+const boards = await getAll('cdn/stories', {
   version: 'published',
   starts_with: 'vereniging/bestuur',
   content_type: 'board',
   sort_by: "content.board_number:desc:int",
-  per_page: 1
-})).data.stories[0];
-const is_last = Number(current_board.content.board_number) === Number(blok.board_number);
+  language
+});
 
 blok.board_number = Number(blok.board_number);
+const is_last = Number(boards[0]?.content.board_number) === blok.board_number;
+
+const FALLBACK_COLOUR = '#fa6b20';
+const base = `/${language === undefined ? "" : `${language}/`}vereniging/bestuur`;
+
+// Relative luminance as defined by WCAG 2.x
+function luminance(hex: string) {
+  const h = hex.replace('#', '');
+  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+  const [r, g, b] = [0, 2, 4].map(i => {
+    const c = parseInt(full.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function navBoard(number: number) {
+  const board = boards.find((b: any) => Number(b.content.board_number) === number);
+  if (!board) return undefined;
+  const raw = board.content.colour;
+  const colour = typeof raw === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(raw.trim()) ? raw.trim() : FALLBACK_COLOUR;
+  // Pick black or white text, whichever has the higher contrast on the board colour
+  const l = luminance(colour);
+  const text = (l + 0.05) / 0.05 >= 1.05 / (l + 0.05) ? '#000000' : '#ffffff';
+  return { number, colour, text, href: `${base}/${number}` };
+}
+
+const prev_board = navBoard(blok.board_number - 1);
+const next_board = navBoard(blok.board_number + 1);
 ---
 
 <main class="w-[92%] sm:w-3/4 mx-auto py-8 min-h-[calc(100vh-160px)]" {...storyblokEditable(blok)}>
-  <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur`} class="text-[var(--brand-dark)] flex flex-row gap-2 group w-max mb-4">
-    <i class="my-auto fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
-    <span class="group-hover:underline">
-      {language === undefined ? "Terug naar het overzicht" : "Back to the board overview"}
-    </span>
-  </a>
+  <nav aria-label={language === undefined ? "Besturen navigatie" : "Board navigation"} class="mb-4 flex items-center justify-between gap-4">
+    <a href={base} class="text-[var(--brand-dark)] flex flex-row gap-2 group w-max">
+      <i class="my-auto fas fa-arrow-left group-hover:-translate-x-1 transition-transform" aria-hidden="true"></i>
+      <span class="group-hover:underline">
+        <span class="hidden sm:inline">{language === undefined ? "Terug naar het overzicht" : "Back to the board overview"}</span>
+        <span class="sm:hidden">{language === undefined ? "Overzicht" : "Overview"}</span>
+      </span>
+    </a>
+
+    {(prev_board || next_board) && (
+      <div class="flex items-center gap-2 text-neutral-400 shrink-0">
+        {prev_board && (
+          <a href={prev_board.href} aria-label={`${language === undefined ? "Vorig bestuur" : "Previous board"}: ${prev_board.number}`} class="group flex items-center gap-1.5">
+            <i class="fas fa-arrow-left text-sm group-hover:-translate-x-0.5 transition-transform" aria-hidden="true"></i>
+            <span class="board-pill" style={{ "background-color": prev_board.colour, color: prev_board.text }}>{prev_board.number}</span>
+          </a>
+        )}
+        {prev_board && next_board && <span aria-hidden="true">·</span>}
+        {next_board && (
+          <a href={next_board.href} aria-label={`${language === undefined ? "Volgend bestuur" : "Next board"}: ${next_board.number}`} class="group flex items-center gap-1.5">
+            <span class="board-pill" style={{ "background-color": next_board.colour, color: next_board.text }}>{next_board.number}</span>
+            <i class="fas fa-arrow-right text-sm group-hover:translate-x-0.5 transition-transform" aria-hidden="true"></i>
+          </a>
+        )}
+      </div>
+    )}
+  </nav>
 
   <div class="mb-6">
-    <div class="flex justify-between">
-        <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${blok.board_number - 1}`} style={{ color: blok.colour, visibility: blok.board_number <= 1 ? "hidden" : "inherit" }} class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
-          <i class="my-auto fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
-          {language === undefined ? " Vorig bestuur: " : " Previous baord: "} {blok.board_number - 1}
-        </a>
-      {!is_last && (
-        <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${blok.board_number + 1}`} style={{ color: blok.colour }} class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
-          {language === undefined ? "Volgend bestuur: " : "Next baord: "} {blok.board_number + 1} { }
-          <i class="my-auto fas fa-arrow-right group-hover:-translate-x-1 transition-transform"></i>
-        </a>
-      )}
-    </div>
     <div class="bg-white shadow rounded-2xl p-8 mb-8 border border-neutral-100">
       <div class="mb-6">
-        <div class="flex justify-between">
-          <h1 class="text-3xl font-extrabold" style={{ color: blok.colour }}>
+        <div class="flex justify-between gap-2">
+          <h1 class="text-2xl sm:text-3xl font-extrabold" style={{ color: blok.colour }}>
             {is_last
               ? (language === undefined ? "Huidig bestuur" : "Current board")
               : (language === undefined ? "Bestuur" : "Board")} {blok.board_number}
           </h1>
-          <button data-color={blok.colour} id="board-color" class="items-center gap-6 rounded-xl border border-neutral-200 p-4 transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
-            <p style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> <span data-language={language} id="copy-text">{(language === undefined ? "Bestuurskleur: " : "Board Color: ")} {blok.colour}</span></p>
+          <button data-color={blok.colour} id="board-color" class="shrink-0 self-start items-center rounded-lg sm:rounded-xl border border-neutral-200 px-2 py-1 text-sm sm:p-4 sm:text-base transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
+            <p style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> <span data-language={language} id="copy-text"><span class="hidden sm:inline">{(language === undefined ? "Bestuurskleur: " : "Board Color: ")}</span>{blok.colour}</span></p>
           </button>
         </div>
         {!!blok.year && <p class="text-neutral-500">{blok.year}</p>}
@@ -102,7 +139,7 @@ blok.board_number = Number(blok.board_number);
   <script>
     const el = document.querySelector('#board-color');
     const textNode = document.querySelector('span#copy-text');
-    const revertText = textNode.innerText;
+    const revertHTML = textNode.innerHTML;
     let timeoutID = undefined;
     el.addEventListener('click', function() {
       navigator.clipboard.writeText(el.dataset.color);
@@ -115,9 +152,31 @@ blok.board_number = Number(blok.board_number);
       }
 
       timeoutID = setTimeout(function () {
-        textNode.innerText = revertText;
+        textNode.innerHTML = revertHTML;
         timeoutID = undefined;
       }, 1000);
     });
   </script>
 </main>
+
+<style>
+  .board-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    height: 1.75rem;
+    padding: 0 0.5rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    line-height: 1;
+    transition: filter 150ms;
+  }
+  a:hover .board-pill,
+  a:focus-visible .board-pill {
+    filter: brightness(0.88);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+</style>
