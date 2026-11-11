@@ -1,32 +1,32 @@
 ---
-import { storyblokEditable } from "@storyblok/astro";
 import { Image } from "astro:assets";
-import { getAll } from "../../storyblok";
+import payload from "../../payload";
 const { blok, language } = Astro.props;
 
-const old_boards = (await getAll('cdn/stories', {
-  version: 'published',
-  starts_with: 'vereniging/bestuur',
-  content_type: 'board',
-  sort_by: "content.board_number:desc:int",
-  language
-})).slice(1);
+const old_boards = (await payload.find({
+  collection: "boards",
+  sort: "-boardNumber",
+  draft: false,
+  locale: language,
+  limit: 100,
+  depth: 3
+})).docs.slice(1);
 ---
 
-<ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" {...storyblokEditable(blok)}>
+<ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
   {old_boards.map(board => (
     <li>
-      <a href={`/${language === undefined ? "" : `${language}/`}vereniging/bestuur/${board.content.board_number}`} class="group block h-56">
-        <div class="relative flex h-full rounded-xl overflow-hidden border-4 group-hover:-translate-y-1 group-hover:shadow transition" style={{ "border-color": board.content.colour }}>
+      <a href={`/${language === "nl" ? "" : `${language}/`}vereniging/bestuur/${board.boardNumber}`} class="group block h-56">
+        <div class="relative flex h-full rounded-xl overflow-hidden border-4 group-hover:-translate-y-1 group-hover:shadow transition" style={{ "border-color": board.colour }}>
           <Image
-            src={board.content.photo.filename}
-            alt={board.content.photo.title}
+            src={`${board.photo.url}`}
+            alt={board.photo.alt || ""}
             width={500} height={400}
             class="absolute w-full h-full object-cover object-top"
           />
           <span class="relative mt-auto ml-auto m-2 px-2 py-1 rounded bg-black/25 text-white font-bold">
-            {language === undefined ? "Bestuur " : "Board "}
-            {board.content.board_number} | {board.content.year}
+            {language === "nl" ? "Bestuur " : "Board "}
+            {board.boardNumber} | {board.year}
           </span>
         </div>
       </a>

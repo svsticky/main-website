@@ -1,17 +1,17 @@
 ---
-import { storyblokEditable } from '@storyblok/astro';
 import { Image } from 'astro:assets';
 import RichText from './basics/RichText.astro';
-const { blok, language } = Astro.props;
+const { language } = Astro.props;
+const blok = Astro.props;
 ---
 
-<ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" {...storyblokEditable(blok)}>
+<ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
   {blok.people.map((person: any) => (
-    <li class="border border-neutral-200 rounded-xl flex flex-col gap-4" {...storyblokEditable(person.content)}>
+    <li class="border border-neutral-200 rounded-xl flex flex-col gap-4">
       <div class="flex flex-row w-full gap-2 border-b border-neutral-200 p-4">
         <Image
-          src={person.photo.filename}
-          width={100} height={100}
+          src={`${person.photo.url}`}
+          width={300} height={300}
           alt={person.name}
           class="rounded-full w-24 h-24 object-cover m-auto"
         />
@@ -43,10 +43,10 @@ const { blok, language } = Astro.props;
         <i class="m-auto fas fa-building"></i>
       </div>
       <h2 class="font-bold text-lg my-auto">
-        {language === undefined ? "Bezoekadres" : "Visitors address"}
+        {language === "nl" ? "Bezoekadres" : "Visitors address"}
       </h2>
     </div>
-    <RichText class="p-4" content={blok.visit_address} />
+    <RichText class="p-4" content={blok.visitAddress} />
   </li>
   <li class="border border-neutral-200 rounded-xl flex flex-col">
     <div class="flex flex-row p-4 gap-4 border-b border-neutral-200">
@@ -54,10 +54,10 @@ const { blok, language } = Astro.props;
         <i class="m-auto fas fa-envelope"></i>
       </div>
       <h2 class="font-bold text-lg my-auto">
-        {language === undefined ? "Postadres" : "Postal address"}
+        {language === "nl" ? "Postadres" : "Postal address"}
       </h2>
     </div>
-    <RichText class="p-4" content={blok.postal_address} />
+    <RichText class="p-4" content={blok.postalAddress} />
   </li>
   <li class="border border-neutral-200 rounded-xl flex flex-col">
     <div class="flex flex-row p-4 gap-4 border-b border-neutral-200">
@@ -65,7 +65,7 @@ const { blok, language } = Astro.props;
         <i class="m-auto fas fa-address-card"></i>
       </div>
       <h2 class="font-bold text-lg my-auto">
-        {language === undefined ? "Gegevens" : "Data"}
+        {language === "nl" ? "Gegevens" : "Data"}
       </h2>
     </div>
     <RichText class="p-4" content={blok.data} />

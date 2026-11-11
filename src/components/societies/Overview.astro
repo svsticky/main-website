@@ -1,40 +1,38 @@
 ---
-import { storyblokEditable } from "@storyblok/astro";
 import { Image } from "astro:assets";
-import { getAll } from "../../storyblok";
+import payload from "../../payload";
 
 const { blok, language } = Astro.props;
 
-const societies = await getAll('cdn/stories', {
-  version: 'published',
-  starts_with: 'vereniging/disputen',
-  content_type: 'society',
-  sort_by: "name",
-  language
+const { docs: societies } = await payload.find({
+  draft: false,
+  locale: language,
+  collection: "societies",
+  sort: "name"
 });
 ---
 
-<ul class="flex flex-col gap-6" {...storyblokEditable(blok)}>
+<ul class="flex flex-col gap-6">
   {societies.map(society => (
     <li>
-      <a href={`/${language === undefined ? "" : `${language}/`}vereniging/disputen/${society.slug}`} class="group block">
+      <a href={`/${language === "nl" ? "" : `${language}/`}${society.slug}`} class="group block">
         <div
           class="flex flex-col sm:flex-row items-center gap-4 rounded-xl overflow-hidden text-white p-4 group-hover:-translate-y-1 group-hover:shadow transition"
-          style={{ background: society.content.colour }}
+          style={{ background: society.colour }}
         >
-          {!!society.content.logo?.filename &&
+          {!!society.logo.url &&
             <Image
               class="w-28 sm:w-1/5 shrink-0 aspect-square object-contain object-center"
-              src={society.content.logo.filename}
+              src={`${society.logo.url}`}
               width={200}
               height={200}
               fit="contain"
               position="center"
-              alt={society.content.name}
+              alt={society.name}
             />}
           <div class="w-full sm:w-3/4 text-center sm:text-left">
-            <h3 class="font-bold text-xl">{society.content.name}</h3>
-            <p class="mt-1">{society.content.short_text}</p>
+            <h3 class="font-bold text-xl">{society.name}</h3>
+            <p class="mt-1">{society.shortText}</p>
           </div>
         </div>
       </a>

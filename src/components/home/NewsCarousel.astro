@@ -1,17 +1,16 @@
 ---
-import { renderRichText, storyblokEditable } from '@storyblok/astro';
-import { getStories } from '../../storyblok';
+import {convertLexicalToPlaintext} from "@payloadcms/richtext-lexical/plaintext";
 import { Image } from "astro:assets";
+import payload from "../../payload";
 const { blok, language } = Astro.props;
 
-const news_items = (await getStories({
-  version: 'published',
-  starts_with: 'nieuws',
-  content_type: 'news-item',
-  sort_by: 'content.date:desc',
-  per_page: 5,
-  language
-})).data.stories;
+const { docs: news_items } = await payload.find({
+  collection: "news-items",
+  draft: false,
+  locale: language,
+  limit: 5,
+  sort: "-date"
+});
 
 const date_formatter = new Intl.DateTimeFormat(language === undefined ? 'nl-NL' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 function format_date(date: string) {
@@ -20,13 +19,13 @@ function format_date(date: string) {
 }
 
 function get_excerpt(richtext: any, max_length = 90) {
-  const text = renderRichText(richtext || {}).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const text = convertLexicalToPlaintext({ data: richtext });
   if (text.length <= max_length) return text;
   return text.slice(0, max_length).replace(/\s+\S*$/, '') + '...';
 }
 ---
 
-<section class="" {...storyblokEditable(blok)}>
+<section class="" >
   {!!news_items.length ? (
     <div class="relative">
       <button id="news-carousel-left" aria-label="Vorige" class="hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-10 h-10 rounded-full bg-white border border-neutral-200 shadow hover:bg-neutral-50 transition">
@@ -40,13 +39,13 @@ function get_excerpt(richtext: any, max_length = 90) {
         {news_items.map((item: any) => (
           <li class="shrink-0 w-72">
             <a href={`${language === undefined ? "" : `/${language}`}/nieuws/${item.slug}`} class="group flex flex-col h-full border border-neutral-200 rounded-xl hover:-translate-y-1 hover:shadow transition overflow-hidden">
-              <Image src={item.content.image.filename} width={300} height={200} alt={item.content.image.title} class="aspect-video w-full object-cover" />
+              <Image src={`${item.image.url}`} width={300} height={200} alt={item.image.alt} class="aspect-video w-full object-cover" />
               <div class="p-6">
-                <h3 class="font-bold text-lg group-hover:text-[var(--brand)] transition">{item.content.title}</h3>
-                <span class="text-xs text-neutral-500">{format_date(item.content.date)}</span>
-                <p class="text-sm text-neutral-600 mt-2">{get_excerpt(item.content.content)}</p>
+                <h3 class="font-bold text-lg group-hover:text-[var(--brand)] transition">{item.title}</h3>
+                <span class="text-xs text-neutral-500">{format_date(item.date)}</span>
+                <p class="text-sm text-neutral-600 mt-2">{get_excerpt(item.content)}</p>
                 <span class="text-sm font-semibold text-[var(--brand)] mt-2">
-                  {language === undefined
+                  {language === "nl"
                     ? "Lees verder"
                     : "Learn more"}
                 </span>
@@ -55,10 +54,10 @@ function get_excerpt(richtext: any, max_length = 90) {
           </li>
         ))}
         <li class="shrink-0 w-72">
-          <a href={`${language === undefined ? "" : `/${language}`}/nieuws/`} class="group flex flex-col h-full border border-neutral-200 rounded-xl p-6 hover:-translate-y-1 hover:shadow transition">
+          <a href={`${language === "nl" ? "" : `/${language}`}/nieuws/`} class="group flex flex-col h-full border border-neutral-200 rounded-xl p-6 hover:-translate-y-1 hover:shadow transition">
             <div class="m-auto text-(--brand) flex flex-row gap-2 group">
               <h3 class="font-semibold text-xl">
-                {language === undefined
+                {language === "nl"
                   ? "Meer nieuws"
                   : "More news"}
               </h3>
@@ -70,7 +69,7 @@ function get_excerpt(richtext: any, max_length = 90) {
     </div>
   ) : (
     <p class="text-neutral-600">
-      {language === undefined
+      {language === "nl"
         ? "Er is momenteel geen nieuws."
         : "There is currently no news."}
     </p>

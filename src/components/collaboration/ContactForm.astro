@@ -1,15 +1,15 @@
 ---
-import { storyblokEditable } from '@storyblok/astro';
 import RichText from '../basics/RichText.astro';
-const { blok, language } = Astro.props;
+const { language } = Astro.props;
+const blok = Astro.props;
 ---
 
-<div class="border border-neutral-300 rounded-xl p-8 flex flex-col gap-4" {...storyblokEditable(blok)}>
+<div class="border border-neutral-300 rounded-xl p-8 flex flex-col gap-4" >
   <RichText content={blok.header} />
   <form action="/api/mail" method="post" class="flex flex-col gap-4">
     <div class="flex flex-col gap-1">
       <label class="text-sm" for="company">
-        {language === undefined ? "Bedrijfsnaam " : "Company name "}
+        {language === "nl" ? "Bedrijfsnaam " : "Company name "}
         <span class="text-red-500">*</span>
       </label>
       <input class="border border-neutral-300 rounded-xl px-2 py-1" type="text" required name="company" id="company">
@@ -17,7 +17,7 @@ const { blok, language } = Astro.props;
 
     <div class="flex flex-col gap-1">
       <label class="text-sm" for="name">
-        {language === undefined ? "Naam contactpersoon " : "Name contact person "}
+        {language === "nl" ? "Naam contactpersoon " : "Name contact person "}
         <span class="text-red-500">*</span>
       </label>
       <input class="border border-neutral-300 rounded-xl px-2 py-1" type="text" required name="name" id="name">
@@ -26,14 +26,14 @@ const { blok, language } = Astro.props;
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="flex flex-col gap-1">
         <label class="text-sm" for="email">
-          {language === undefined ? "Emailadres " : "Email address "}
+          {language === "nl" ? "Emailadres " : "Email address "}
           <span class="text-red-500">*</span>
         </label>
         <input class="border border-neutral-300 rounded-xl px-2 py-1" type="email" required name="email" id="email">
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-sm" for="tel">
-          {language === undefined ? "Telefoonnummer" : "Phone number"}
+          {language === "nl" ? "Telefoonnummer" : "Phone number"}
         </label>
         <input class="border border-neutral-300 rounded-xl px-2 py-1" type="tel" name="tel" id="tel">
       </div>
@@ -41,7 +41,7 @@ const { blok, language } = Astro.props;
 
     <div class="flex flex-col gap-1">
       <label class="text-sm" for="message">
-        {language === undefined ? "Bericht / vraag " : "Message / question "}
+        {language === "nl" ? "Bericht / vraag " : "Message / question "}
         <span class="text-red-500">*</span>
       </label>
       <textarea class="border border-neutral-300 rounded-xl px-2 py-1" required name="message" id="message"></textarea>
@@ -49,7 +49,7 @@ const { blok, language } = Astro.props;
 
     <button type="submit" class="flex disabled:cursor-not-allowed cursor-pointer w-full bg-[var(--brand)] text-white text-center text-lg px-4 py-2 font-bold rounded-xl hover:bg-[var(--brand-dark)] group transition">
       <div class="mx-auto">
-        {language === undefined ? "Versturen" : "Submit"}
+        {language === "nl" ? "Versturen" : "Submit"}
         <i class="ml-2 fas fa-paper-plane my-auto group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition"></i>
       </div>
     </button>
@@ -58,7 +58,6 @@ const { blok, language } = Astro.props;
 
 <script>
   import { actions } from "astro:actions";
-import { experimental_getFontFileURL } from "astro:assets";
 
   const form = document.querySelector("form")!;
   const submit_button = form.querySelector("button[type='submit']")! as HTMLButtonElement;
@@ -66,7 +65,6 @@ import { experimental_getFontFileURL } from "astro:assets";
     event.preventDefault();
     const form_data = new FormData(form);
 
-    // TODO: Loading spinner
     const spinner = document.createElement("i");
     spinner.classList.add("fas", "fa-spinner", "fa-spin-pulse", "mx-auto", "text-xl", "my-1");
     submit_button.replaceChildren(spinner);

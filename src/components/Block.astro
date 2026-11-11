@@ -1,0 +1,73 @@
+---
+import RichText from "./basics/RichText.astro";
+import Separator from "./basics/Separator.astro";
+import Title from "./basics/Title.astro";
+import InfoColumns from "./home/InfoColumns.astro";
+import NewsCarousel from "./home/NewsCarousel.astro";
+import ActivitiesCarousel from "./home/ActivitiesCarousel.astro";
+import Hero from "./home/Hero.astro";
+import FeaturedPartnerBanner from "./home/FeaturedPartnerBanner.astro";
+import StatsSection from "./home/StatsSection.astro";
+import Timeline from "./Timeline.astro";
+import Old from "./board/Old.astro";
+import Current from "./board/Current.astro";
+import Activities from "./Activities.astro";
+import CommitteeOverview from "./committees/Overview.astro";
+import SocietyOverview from "./societies/Overview.astro";
+import Lvv from "./Lvv.astro";
+import Vcp from "./Vcp.astro";
+import Logos from "./branding/Logos.astro";
+import Colour from "./branding/Colour.astro";
+import PosterSpecs from "./branding/PosterSpecs.astro";
+import TwoColumn from "./branding/TwoColumn.astro";
+import Contact from "./Contact.astro";
+import Links from "./Links.astro";
+import PartnerOverview from "./partners/Overview.astro";
+import VacancyOverview from "./vacancies/Overview.astro";
+import PartneringReasons from "./collaboration/PartneringReasons.astro";
+import ContactForm from "./collaboration/ContactForm.astro";
+import PartnerCarousel from "./collaboration/PartnerCarousel.astro";
+import Promotion from "./collaboration/Promotion.astro";
+import NewsOverview from "./news/Overview.astro";
+import Button from "./basics/Button.astro";
+
+const { block, language } = Astro.props;
+block.language = language;
+---
+
+{(() => {
+  switch (block.blockType) {
+    case "rich-text": return <RichText {...block} />
+    case "title": return <Title {...block} />
+    case "separator": return <Separator {...block} />
+    case "news-carousel": return <NewsCarousel {...block} />
+    case "activities-carousel": return <ActivitiesCarousel {...block} />
+    case "info-columns": return <InfoColumns {...block} />
+    case "hero": return <Hero {...block} />
+    case "featured-partner-banner": return <FeaturedPartnerBanner {...block} />
+    case "stats-section": return <StatsSection {...block} />
+    case "timeline": return <Timeline {...block} />
+    case "old-boards": return <Old {...block} />
+    case "current-board": return <Current {...block} />
+    case "activities": return <Activities {...block} />
+    case "committee-overview": return <CommitteeOverview {...block} />
+    case "society-overview": return <SocietyOverview {...block} />
+    case "lvv-page": return <Lvv {...block} />
+    case "vcp-page": return <Vcp {...block} />
+    case "branding-logos": return <Logos {...block} />
+    case "branding-colour": return <Colour {...block} />
+    case "branding-poster": return <PosterSpecs {...block} />
+    case "branding-twocol": return <TwoColumn {...block} />
+    case "contact-grid": return <Contact {...block} />
+    case "links-page": return <Links {...block} />
+    case "partner-overview": return <PartnerOverview {...block} />
+    case "vacancy-overview": return <VacancyOverview {...block} />
+    case "partnering-reasons": return <PartneringReasons {...block} />
+    case "collaboration-form": return <ContactForm {...block} />
+    case "partner-carousel": return <PartnerCarousel {...block} />
+    case "promotion": return <Promotion {...block} />
+    case "news-overview": return <NewsOverview {...block} />
+    case "button": return <Button {...block} />
+    default: throw new Error(`No block configured for ${block.blockType}`)
+  }
+})}

@@ -1,10 +1,9 @@
 ---
-import { storyblokEditable } from '@storyblok/astro';
-const { blok } = Astro.props;
+const blok = Astro.props;
 const duration = Number(blok.duration) || 2000;
 ---
 
-<section class="w-full sm:w-3/4 mx-auto" {...storyblokEditable(blok)}>
+<section class="w-full sm:w-3/4 mx-auto" >
   <div class="stats-wrapper grid grid-cols-1 sm:grid-cols-3 gap-6" data-duration={duration}>
     {blok.stats?.map((stat: any) => (
       <div class="flex flex-col items-center gap-2 bg-white border border-neutral-200 rounded-2xl p-8 shadow-sm">

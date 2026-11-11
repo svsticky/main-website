@@ -1,31 +1,37 @@
 ---
-import { storyblokEditable } from '@storyblok/astro';
 import { Image } from "astro:assets";
-import { getAll } from '../../storyblok';
+import payload from "../../payload";
 
 const { blok, language } = Astro.props;
 
-const partners = await getAll('cdn/stories', {
-  version: 'published',
-  starts_with: 'carriere/partners',
-  content_type: 'partner',
+const { docs: partners } = await payload.find({
+  collection: "partners",
+  draft: false,
+  locale: language,
+  limit: 1000
 });
+// const partners = await getAll('cdn/stories', {
+//   version: 'published',
+//   starts_with: 'carriere/partners',
+//   content_type: 'partner',
+// });
 
-const main_partners = partners.filter(partner => partner.content.is_main);
-const regular_partners = partners.filter(partner => !partner.content.is_main);
+const main_partners = partners.filter(partner => partner.isMain);
+const regular_partners = partners.filter(partner => !partner.isMain);
 const displayed_partners = main_partners.concat(regular_partners);
 ---
 
-<div class="overflow-x-hidden overflow-y-visible w-full py-4" {...storyblokEditable(blok)}>
+<div class="overflow-x-hidden overflow-y-visible w-full py-4">
   <ul class="overflow-y-visible" id="conveyor" style={{ "animation-duration": `${displayed_partners.length * 2}s` }}>
     {[...displayed_partners, ...displayed_partners].map(partner => (
-      <a href={"/" + (language === undefined ? "" : `${language}/`) + partner.full_slug} class="hover:-translate-y-2 transition">
+      <a href={"/" + (language === "nl" ? "" : `${language}/`) + partner.full_slug} class="hover:-translate-y-2 transition">
         <li>
           <Image
             width={200}
             height={200}
-            alt={partner.content.name}
-            src={partner.content.logo.filename} fit="contain"
+            alt={partner.name}
+            src={`${partner.logo.url}`}
+            fit="contain"
             class="object-contain"
           />
         </li>

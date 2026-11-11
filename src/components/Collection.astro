@@ -1,0 +1,24 @@
+---
+import Board from "./board/Board.astro";
+import Committee from "./committees/Committee.astro";
+import News from "./news/News.astro";
+import Page from "./Page.astro";
+import Partner from "./partners/Partner.astro";
+import Society from "./societies/Society.astro";
+import Vacancy from "./vacancies/Vacancy.astro";
+
+const { collection, entity, language, slug } = Astro.props;
+---
+
+{(() => {
+  switch (collection) {
+    case "pages": return <Page blok={entity} language={language} slug={slug} />
+    case "vacancies": return <Vacancy blok={entity} language={language} slug={slug} />
+    case "societies": return <Society blok={entity} language={language} slug={slug} />
+    case "committees": return <Committee blok={entity} language={language} slug={slug} />
+    case "boards": return <Board blok={entity} language={language} slug={slug} />
+    case "news-items": return <News blok={entity} language={language} slug={slug} />
+    case "partners": return <Partner blok={entity} language={language} slug={slug} />
+    default: throw new Error(`Unsupported collection type ${collection}`);
+  }
+})}

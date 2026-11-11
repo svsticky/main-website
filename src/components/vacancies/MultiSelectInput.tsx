@@ -44,7 +44,7 @@ export function MultiSelectInput({ placeholder, options, max_visible, atom_name,
       set_selected_items(selected_items.toSpliced(removal_index, 1))
     } else {
       const option = find_option(options, key)!;
-      atom.set([...$atom, option.value]);
+      atom.set([...$atom, key]);
       set_selected_items([...selected_items, option]);
     }
   };

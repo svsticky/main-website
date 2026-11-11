@@ -1,34 +1,32 @@
 ---
-import { storyblokEditable } from "@storyblok/astro";
 import { Image } from "astro:assets";
-import { getAll } from "../../storyblok";
+import payload from "../../payload";
 
-const { blok, language } = Astro.props;
+const { type, language } = Astro.props;
 
-const stories = await getAll('cdn/stories', {
-  version: 'published',
-  starts_with: 'vereniging/commissies',
-  content_type: 'committee',
-  sort_by: "name",
-  language
+const { docs: stories } = await payload.find({
+  draft: false,
+  locale: language,
+  collection: "committees",
+  sort: "name"
 });
 ---
 
-<ul class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8" {...storyblokEditable(blok)}>
-  {stories.filter(story => blok.type ? story.content.type === blok.type : true).map(committee =>
-    <a href={`${language === undefined ? "" : `/${language}`}/vereniging/commissies/${committee.slug}`} class="group relative block aspect-square border border-neutral-300 rounded-xl overflow-hidden hover:-translate-y-1 hover:shadow transition">
+<ul class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8">
+  {stories.filter(story => type ? story.type === type : true).map(committee =>
+    <a href={`${language === "nl" ? "" : `/${language}`}/${committee.slug}`} class="group relative block aspect-square border border-neutral-300 rounded-xl overflow-hidden hover:-translate-y-1 hover:shadow transition">
       <li class="h-full">
-        {!!committee.content.logo?.filename &&
+        {!!committee.logo.url &&
           <Image
             class="w-full h-full object-contain"
-            src={committee.content.logo.filename}
+            src={`${committee.logo.url}`}
             width={300}
             height={300}
             fit="contain"
-            alt={committee.content.name}
+            alt={committee.name}
           />}
         <div class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition">
-          <span class="text-white font-bold text-center px-2 hyphens-auto" lang="nl">{committee.content.name}</span>
+          <span class="text-white font-bold text-center px-2 hyphens-auto" lang="nl">{committee.name}</span>
         </div>
       </li>
     </a>

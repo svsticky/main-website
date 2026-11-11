@@ -1,13 +1,12 @@
 ---
-import { storyblokEditable } from "@storyblok/astro";
-const {blok} = Astro.props;
-const url = blok.link.linktype === "url" ? blok.link.url : blok.link.cached_url;
+const blok = Astro.props;
+const url = blok.link.type === "external" ? blok.link.url : `/${blok.link.slug}`;
 ---
 
-<a href={url} {...storyblokEditable(blok)}>
+<a href={url}>
   <button class="flex flex-row gap-2 px-2 py-1 bg-[var(--brand)] text-white font-semibold rounded hover:bg-[var(--brand-dark)] hover:-translate-y-0.5 transition cursor-pointer">
-    {blok.icon_location === "left" ? <i class={`my-auto fas fa-${blok.icon}`}></i> : undefined}
+    {blok.iconLocation === "left" ? <i class={`my-auto fas fa-${blok.icon}`}></i> : undefined}
     {blok.title}
-    {blok.icon_location === "right" ? <i class={`my-auto fas fa-${blok.icon}`}></i> : undefined}
+    {blok.iconLocation === "right" ? <i class={`my-auto fas fa-${blok.icon}`}></i> : undefined}
   </button>
 </a>

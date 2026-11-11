@@ -1,43 +1,42 @@
 ---
-import { storyblokEditable } from '@storyblok/astro';
 import { Image } from 'astro:assets';
 import RichText from '../basics/RichText.astro';
-import { getAll } from '../../storyblok';
-const { blok, language } = Astro.props;
+import payload from '../../payload';
+const blok = Astro.props;
+const { language } = Astro.props;
 
-const vacancies = await getAll('cdn/stories', {
-  version: 'published',
-  starts_with: 'carriere/vacatures',
-  content_type: 'vacancy',
-  resolve_relations: 'vacancy.partner',
+const { docs: featured_vacancies } = await payload.find({
+  collection: "vacancies",
+  draft: false,
+  locale: language,
+  where: { isFeatured: { equals: true } }
 });
-const featured_vacancies = vacancies.filter((v: any) => v.content.is_featured);
 ---
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8" {...storyblokEditable(blok)}>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
   <div class="flex flex-col gap-4">
     <h2 class="text-2xl font-bold text-center">
-      {language === undefined ? "Wekelijkse borrel" : "Weekly drinks"}
+      {language === "nl" ? "Wekelijkse borrel" : "Weekly drinks"}
     </h2>
     <div id="drinks-card" class="bg-white border border-neutral-200 rounded-2xl p-6 overflow-y-auto">
       <p>
-        {language === undefined ? "Elke week is er een borrel om " : "Every week there are drinks at "}
-        <strong>{blok.drinks_time}</strong> in <strong>{blok.drinks_location}</strong>
-        {language === undefined
+        {language === "nl" ? "Elke week is er een borrel om " : "Every week there are drinks at "}
+        <strong>{blok.drinksTime}</strong> in <strong>{blok.drinksLocation}</strong>
+        {language === "nl"
           ? " waar je even kunt socialisen met je mede-leden. "
           : " where you can come and socialise with your fellow members. "}
-        {language === undefined
+        {language === "nl"
           ? "De borrels zijn iedere "
           : "The drinks are every "}
-        <strong>{blok.drinks_day}</strong>!
+        <strong>{blok.drinksDay}</strong>!
       </p>
-      {!!blok.drinks_description?.content?.length && <RichText class="mt-4" content={blok.drinks_description} />}
+      {!!blok.drinksDescription && <RichText class="mt-4" content={blok.drinksDescription} />}
     </div>
   </div>
 
   <div class="flex flex-col gap-4">
     <h2 class="text-2xl font-bold text-center">
-      {language === undefined
+      {language === "nl"
         ? `Uitgelichte vacature${featured_vacancies.length > 1 ? "s" : ""}`
         : `Featured ${featured_vacancies.length > 1 ? "vacancy" : "vacancies"}`}
     </h2>
@@ -58,7 +57,7 @@ const featured_vacancies = vacancies.filter((v: any) => v.content.is_featured);
     ) : (
       <div class="vacancy-card bg-white border border-neutral-200 rounded-2xl p-6 flex-1 text-neutral-500 grid">
         <span class="m-auto block">
-          {language === undefined
+          {language === "nl"
             ? "Er is op dit moment geen vacature uitgelicht."
             : "There is currently no featured vacancy."}
         </span>

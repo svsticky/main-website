@@ -1,50 +1,59 @@
 ---
-import { storyblokEditable } from '@storyblok/astro';
 import { Image } from "astro:assets";
 const { blok, language } = Astro.props;
 
 import { MultiSelectInput } from "./MultiSelectInput";
-import { getAll, get } from '../../storyblok';
+import payload from "../../payload";
 
-const vacancies = await getAll('cdn/stories', {
-  version: 'published',
-  starts_with: 'carriere/vacatures',
-  content_type: 'vacancy',
-  resolve_relations: 'vacancy.partner',
-  language
+let { docs: vacancies } = await payload.find({
+  draft: false,
+  locale: language,
+  collection: "vacancies",
+  sort: "name",
+  depth: 3
+});
+vacancies = vacancies.map(vacancy => ({
+  ...vacancy,
+  studies: vacancy.studies.map(study => study.id),
+  types: vacancy.types.map(type => type.id)
+}));
+
+const { docs: studies } = await payload.find({
+  collection: 'programmes',
+  draft: false,
+  locale: language,
+  limit: 50
 });
 
-const { data: { datasource_entries: studies } } = await get('cdn/datasource_entries', {
-  datasource: "vacancy-studies",
-  dimension: "type"
-});
 const options = [
   {
     label: { nl: "Bachelor opleidingen", en: "Bachelor programmes" },
-    values: studies.filter((study: any) => study.dimension_value === "bsc").map((study: any) => ({ key: study.name, value: study.value }))
+    values: studies.filter((study: any) => study.type === "Bachelor").map((study: any) => ({ key: study.id, value: study.name }))
   },
   {
     label: { nl: "Master opleidingen", en: "Master programmes" },
-    values: studies.filter((study: any) => study.dimension_value === "msc").map((study: any) => ({ key: study.name, value: study.value }))
+    values: studies.filter((study: any) => study.type === "Master").map((study: any) => ({ key: study.id, value: study.name }))
   }
 ];
 
-const { data: { datasource_entries: types } } = await get('cdn/datasource_entries', {
-  datasource: "vacancy-types",
-  dimension: "translation"
+const { docs: types } = await payload.find({
+  collection: "job-types",
+  draft: false,
+  locale: language,
+  limit: 50
 });
-const type_options = types.map((type: any) => ({ key: type.name, value: type.value }));
+const type_options = types.map((type: any) => ({ key: type.id, value: type.name }));
 ---
 
-<div {...storyblokEditable(blok)}>
+<div>
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <div>
       <span class="text-sm text-neutral-600">
-        {language === undefined ? "Filter op opleiding:" : "Filter on programme:"}
+        {language === "nl" ? "Filter op opleiding:" : "Filter on programme:"}
       </span>
       <MultiSelectInput
         client:load
-        placeholder={language === undefined ? "Selecteer een opleiding om te filteren" : "Select a programme to filter"}
+        placeholder={language === "nl" ? "Selecteer een opleiding om te filteren" : "Select a programme to filter"}
         options={options}
         atom_name="programme_filter"
         language={language}
@@ -52,11 +61,11 @@ const type_options = types.map((type: any) => ({ key: type.name, value: type.val
     </div>
     <div>
       <span class="text-sm text-neutral-600">
-        {language === undefined ? "Filter op type:" : "Filter on vacancy type:"}
+        {language === "nl" ? "Filter op type:" : "Filter on vacancy type:"}
       </span>
       <MultiSelectInput
         client:load
-        placeholder={language === undefined ? "Selecteer een type om te filteren" : "Select a type to filter"}
+        placeholder={language === "nl" ? "Selecteer een type om te filteren" : "Select a type to filter"}
         options={type_options}
         atom_name="type_filter"
         language={language}
@@ -67,21 +76,21 @@ const type_options = types.map((type: any) => ({ key: type.name, value: type.val
   <div class="mt-8">
     <ul class="grid grid-cols-2 sm:grid-cols-4 gap-6" id="vacatures">
       {vacancies.map((vacancy: any) =>
-        <a class="group" href={`${language === undefined ? "" : `/${language}`}/carriere/vacatures/${vacancy.slug}`} data-types={vacancy.content.types} data-studies={vacancy.content.studies}>
+        <a class="group" href={`/${language === "nl" ? "" : `${language}/`}${vacancy.slug}`} data-types={vacancy.types} data-studies={vacancy.studies}>
           <li class="flex flex-col h-full border border-neutral-200 rounded-xl overflow-hidden group-hover:-translate-y-1 group-hover:shadow-lg group-hover:border-[var(--brand)] transition">
             <div class="aspect-square p-6 border-b border-neutral-200 flex items-center justify-center">
-              {!!vacancy.content.partner?.[0]?.content?.logo?.filename &&
+              {!!vacancy.partner[0].logo.url &&
                 <Image
                   class="max-w-full max-h-full object-contain"
-                  src={vacancy.content.partner[0].content.logo.filename}
-                  alt={vacancy.content.partner[0].content.name}
+                  src={`${vacancy.partner[0].logo.url}`}
+                  alt={vacancy.partner[0].name}
                   fit='contain'
                   width={200} height={200}
                 />}
             </div>
             <div class="p-4 flex flex-col gap-4 text-center flex-1">
-              <span class="font-bold text-lg group-hover:text-[var(--brand)] transition">{vacancy.content.name}</span>
-              <p class="text-sm text-neutral-600">{vacancy.content.short_text}</p>
+              <span class="font-bold text-lg group-hover:text-[var(--brand)] transition">{vacancy.name}</span>
+              <p class="text-sm text-neutral-600">{vacancy.shortText}</p>
             </div>
           </li>
         </a>
@@ -97,8 +106,8 @@ const type_options = types.map((type: any) => ({ key: type.name, value: type.val
   const vacancies = Array.from(vacancy_container.children) as HTMLElement[];
 
   function passes_filter(vacancy: HTMLElement) {
-    const types = (vacancy.dataset["types"] ?? "").split(",");
-    const programmes = (vacancy.dataset["studies"] ?? "").split(",");
+    const types = (vacancy.dataset["types"] ?? "").split(",").map(Number);
+    const programmes = (vacancy.dataset["studies"] ?? "").split(",").map(Number);
     const active_programmes = programme_filter.get();
     const active_types = type_filter.get();
     return (!active_types.length || types.some(type => active_types.includes(type)))

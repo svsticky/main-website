@@ -1,9 +1,8 @@
 ---
-import { storyblokEditable } from '@storyblok/astro';
 const { blok } = Astro.props;
 ---
 
-<ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="activities" {...storyblokEditable(blok)}></ul>
+<ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="activities"></ul>
 <p id="activities-empty" class="hidden text-center text-neutral-600 mt-8">Er zijn momenteel geen activiteiten gepland.</p>
 
 <script>

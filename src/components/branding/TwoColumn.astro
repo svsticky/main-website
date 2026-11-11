@@ -1,14 +1,15 @@
 ---
-import { storyblokEditable } from '@storyblok/astro';
-import StoryblokComponent from '@storyblok/astro/StoryblokComponent.astro';
-const { blok, language } = Astro.props;
+import Block from "../Block.astro";
+
+const { language } = Astro.props;
+const blok = Astro.props;
 ---
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8" {...storyblokEditable(blok)}>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
   <div class="flex flex-col gap-8">
-    {blok.column_1.map(subblok => <StoryblokComponent blok={subblok} language={language} />)}
+    {blok.column1.map(subblok => <Block block={subblok} language={language} />)}
   </div>
   <div class="flex flex-col gap-8">
-    {blok.column_2.map(subblok => <StoryblokComponent blok={subblok} language={language} />)}
+    {blok.column2.map(subblok => <Block block={subblok} language={language} />)}
   </div>
 </div>

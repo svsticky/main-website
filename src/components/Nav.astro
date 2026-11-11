@@ -1,51 +1,12 @@
 ---
+import payload from "../payload";
+
 const { language, slug } = Astro.props;
 
-const TAVERN_FRONTEND_URL = import.meta.env.PUBLIC_TAVERN_FRONTEND_URL || "https://koala.svsticky.nl";
-
-const menus = [
-	{
-		title: { nl: 'Vereniging', en: 'Association' },
-		submenu: [
-			{ title: { nl: 'Over ons', en: 'About us' }, to: '/vereniging/over-ons' },
-			{ title: { nl: 'Bestuur', en: 'Board' }, to: '/vereniging/bestuur' },
-			{ title: { nl: 'Activiteiten', en: 'Activities' }, to: '/vereniging/activiteiten' },
-			{ title: { nl: 'Commissies', en: 'Committees' }, to: '/vereniging/commissies' },
-			{ title: { nl: 'Disputen', en: 'Societies' }, to: '/vereniging/disputen' },
-      { title: { nl: "Leden van Verdienste", en: "Honary members" }, to: "/vereniging/leden-van-verdienste" },
-      { title: { nl: "Sociale veiligheid", en: "Social safety" }, to: "/vereniging/vcp" },
-			{ title: { nl: 'Huisstijl', en: 'Branding' }, to: '/vereniging/huisstijl' },
-      { title: { nl: 'Alumni', en: 'Alumni' }, to: '/vereniging/alumni' },
-			{ title: { nl: 'Contact', en: 'Contact' }, to: '/vereniging/contact' },
-		],
-	},
-	{
-		title: { nl: 'Studie', en: "Study" },
-		submenu: [
-			{ title: { nl: 'Medezeggenschap', en: "Representatives" }, to: '/studie/medezeggenschap' },
-			{ title: { nl: 'OER', en: "EER" }, to: '/studie/oer' },
-			{ title: { nl: 'Boekverkoop', en: "Books" }, to: 'https://svsticky.nl/boeken' },
-		],
-	},
-	{
-		title: { nl: 'Carriere', en: "Career" },
-		submenu: [
-			{ title: { nl: 'Partners', en: "Partners" }, to: '/carriere/partners' },
-			{ title: { nl: 'Samenwerking', en: "Collaboration" }, to: '/carriere/samenwerking' },
-			{ title: { nl: 'Vacatures', en: "Vacancies" }, to: '/carriere/vacatures' },
-		],
-	},
-	{ title: { nl: 'Nieuws', en: 'News' }, to: '/nieuws' },
-	{ title: { nl: 'Links', en: "Links" }, to: '/links' },
-];
-
-const buttons = [
-	{ title: { nl: 'Koala', en: 'Koala' }, to: TAVERN_FRONTEND_URL, type: 'button' },
-	{ title: { nl: 'Word lid', en: 'Join Sticky' }, to: 'https://wordlid.svsticky.nl', type: 'button' },
-];
+const menu = await payload.findGlobal({ slug: "navigation", locale: language });
 
 const languages = [
-  { text: "Nederlands", prefix: "", code: undefined },
+  { text: "Nederlands", prefix: "", code: "nl" },
   { text: "English", prefix: "/en", code: "en" }
 ];
 ---
@@ -53,7 +14,7 @@ const languages = [
 <nav class="px-4 md:px-6 flex items-center h-16 justify-between bg-[var(--brand)] relative z-50">
   <div id="dies-confetti" class="pointer-events-none absolute top-full left-0 w-full h-0 overflow-visible"></div>
   <div class="flex items-center gap-10">
-    <a href={language ? `/${language}` : "/"} class="py-2 relative">
+    <a href={language !== "nl" ? `/${language}` : "/"} class="py-2 relative">
       <img
         class="h-10 md:h-12"
         src="https://public.svsticky.nl/logos/logo_compact_outline_wit.svg"
@@ -62,31 +23,35 @@ const languages = [
     </a>
     <ul class="hidden lg:flex h-full flex-row items-center gap-8">
       {
-        menus.map((menu) => (
+        menu.items.map((menu) => (
           <li class="my-auto relative">
-            {menu.to ? (
-              <a href={`${language ? `/${language}` : ""}${menu.to}`} class="text-white hover:text-white/80 transition">
-                {menu.title[language === undefined ? "nl" : "en"]}
+            {menu.blockType === "nav-button" ? (
+              <a href={menu.link.url || `${language === "en" ? `/${language}` : ""}/${menu.link.page.slug}`} class="text-white hover:text-white/80 transition">
+                {menu.title}
               </a>
             ) : (
               <a data-menu class="text-white hover:text-white/80 transition cursor-pointer select-none flex flex-row gap-1">
-                {menu.title[language === undefined ? "nl" : "en"]}
+                {menu.title}
                 <i class="fa-solid fa-caret-down transition-transform my-auto" />
               </a>
             )}
-            {menu.submenu && (
+            {menu.links && (
               <ul
                 class="absolute top-8 left-1/2 -translate-x-1/2 -translate-y-1 flex flex-col bg-white border border-neutral-200 shadow-lg rounded-xl text-center z-50 px-4 py-1 w-max opacity-0 pointer-events-none transition-all duration-200"
               >
-                {menu.submenu.map((submenu) => (
+                {menu.links.map((submenu) => (
                   <li class="not-last:border-b not-last:border-neutral-200">
                     <a
                       class="w-full inline-block py-2 hover:text-[var(--brand)] transition"
-                      href={`${language && !submenu.to.startsWith('http') ? `/${language}` : ""}${submenu.to}`}
+                      href={
+                        submenu.link.type === "external"
+                          ? submenu.link.url
+                          : `${language === "nl" ? "" : `/${language}`}/${submenu.link.page.slug}`
+                      }
                     >
-                      {submenu.title[language === undefined ? "nl" : "en"]}
+                      {submenu.title}
                       {" "}
-                      {submenu.to.startsWith('http') && (
+                      {submenu.link.type === "external" && (
                         <i class="text-sm fa-solid fa-arrow-up-right-from-square" />
                       )}
                     </a>
@@ -103,13 +68,13 @@ const languages = [
   <div class="flex items-center gap-4">
     <ul class="hidden lg:flex h-full flex-row items-center gap-4">
       {
-        buttons.map((button) => (
+        menu.buttons.map((button) => (
           <li class="my-auto">
             <a
-              href={button.to}
+              href={button.link.url}
               class="text-[var(--brand)] bg-white rounded-lg px-4 py-2 inline-block hover:-translate-y-0.5 hover:shadow transition"
             >
-              {button.title[language === undefined ? "nl" : "en"]}
+              {button.title}
             </a>
           </li>
         ))
@@ -168,25 +133,25 @@ const languages = [
 <div id="mobile-menu" class="hidden lg:hidden fixed inset-x-0 top-16 bg-white z-40 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain shadow-lg">
   <ul class="flex flex-col divide-y divide-neutral-200 border-b border-neutral-200">
     {
-      menus.map((menu) => (
+      menu.items.map((menu) => (
         <li>
-          {menu.to ? (
-            <a href={`${language ? `/${language}` : ""}${menu.to}`} class="block px-6 py-4 font-semibold text-neutral-800">
-              {menu.title[language === undefined ? "nl" : "en"]}
+          {menu.blockType === "nav-button" ? (
+            <a href={`${language ? `/${language}` : ""}${menu.link.url}`} class="block px-6 py-4 font-semibold text-neutral-800">
+              {menu.title}
             </a>
           ) : (
             <div>
               <button type="button" data-mobile-menu class="cursor-pointer w-full flex justify-between items-center px-6 py-4 font-semibold text-neutral-800">
-                {menu.title[language === undefined ? "nl" : "en"]}
+                {menu.title}
                 <i class="fa-solid fa-caret-down transition-transform" />
               </button>
               <ul class="hidden flex-col bg-neutral-50">
-                {menu.submenu?.map((submenu) => (
+                {menu.links.map((submenu) => (
                   <li class="not-last:border-b not-last:border-neutral-200">
-                    <a href={`${language ? `/${language}` : ""}${submenu.to}`} class="block px-10 py-3 text-neutral-600">
-                      {submenu.title[language === undefined ? "nl" : "en"]}
+                    <a href={`${language ? `/${language}` : ""}${submenu.link.url}`} class="block px-10 py-3 text-neutral-600">
+                      {submenu.title}
                       {" "}
-                      {submenu.to.startsWith('http') && (
+                      {submenu.link.type === "external" && (
                         <i class="text-xs fa-solid fa-arrow-up-right-from-square" />
                       )}
                     </a>
@@ -202,12 +167,12 @@ const languages = [
 
   <div class="flex flex-col gap-3 p-6">
     {
-      buttons.map((button) => (
+      menu.buttons.map((button) => (
         <a
-          href={button.to}
+          href={button.link.url}
           class="text-center text-[var(--brand)] bg-neutral-100 border border-[var(--brand)] rounded-lg px-4 py-3 font-semibold"
         >
-          {button.title[language === undefined ? "nl" : "en"]}
+          {button.title}
         </a>
       ))
     }

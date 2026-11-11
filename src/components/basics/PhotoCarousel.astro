@@ -7,7 +7,7 @@ const { photos, name, class: className = "" } = Astro.props;
   <div class={`relative w-full sm:float-right sm:w-64 sm:ml-6 mb-4 aspect-square rounded-lg overflow-hidden border border-neutral-200 ${className}`} data-photo-carousel>
     {photos.map((photo: any, idx: number) => (
       <Image
-        src={photo.filename}
+        src={`${photo.url}`}
         alt={photo.alt || name}
         inferSize={true}
         fit="cover"

@@ -1,23 +1,21 @@
 ---
-import { storyblokEditable } from '@storyblok/astro';
 import { Image } from 'astro:assets';
-import { getAll } from '../../storyblok';
 const { blok, language } = Astro.props;
 import RichText from '../basics/RichText.astro';
+import payload from '../../payload';
 
-const boards = await getAll('cdn/stories', {
-  version: 'published',
-  starts_with: 'vereniging/bestuur',
-  content_type: 'board',
-  sort_by: "content.board_number:desc:int",
-  language
+const { docs: boards } = await payload.find({
+  collection: "boards",
+  draft: false,
+  locale: language,
+  sort: "-boardNumber"
 });
 
 blok.board_number = Number(blok.board_number);
-const is_last = Number(boards[0]?.content.board_number) === blok.board_number;
+const is_last = Number(boards[0]?.board_number) === blok.board_number;
 
 const FALLBACK_COLOUR = '#fa6b20';
-const base = `/${language === undefined ? "" : `${language}/`}vereniging/bestuur`;
+const base = `/${language === "nl" ? "" : `${language}/`}vereniging/bestuur`;
 
 // Relative luminance as defined by WCAG 2.x
 function luminance(hex: string) {
@@ -31,9 +29,9 @@ function luminance(hex: string) {
 }
 
 function navBoard(number: number) {
-  const board = boards.find((b: any) => Number(b.content.board_number) === number);
+  const board = boards.find((b: any) => Number(b.boardNumber) === number);
   if (!board) return undefined;
-  const raw = board.content.colour;
+  const raw = board.colour;
   const colour = typeof raw === 'string' && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(raw.trim()) ? raw.trim() : FALLBACK_COLOUR;
   // Pick black or white text, whichever has the higher contrast on the board colour
   const l = luminance(colour);
@@ -41,31 +39,31 @@ function navBoard(number: number) {
   return { number, colour, text, href: `${base}/${number}` };
 }
 
-const prev_board = navBoard(blok.board_number - 1);
-const next_board = navBoard(blok.board_number + 1);
+const prev_board = navBoard(blok.boardNumber - 1);
+const next_board = navBoard(blok.boardNumber + 1);
 ---
 
-<main class="w-[92%] sm:w-3/4 mx-auto py-8 min-h-[calc(100vh-160px)]" {...storyblokEditable(blok)}>
-  <nav aria-label={language === undefined ? "Besturen navigatie" : "Board navigation"} class="mb-4 flex items-center justify-between gap-4">
+<main class="w-[92%] sm:w-3/4 mx-auto py-8 min-h-[calc(100vh-160px)]">
+  <nav aria-label={language === "nl" ? "Besturen navigatie" : "Board navigation"} class="mb-4 flex items-center justify-between gap-4">
     <a href={base} class="text-[var(--brand-dark)] flex flex-row gap-2 group w-max">
       <i class="my-auto fas fa-arrow-left group-hover:-translate-x-1 transition-transform" aria-hidden="true"></i>
       <span class="group-hover:underline">
-        <span class="hidden sm:inline">{language === undefined ? "Terug naar het overzicht" : "Back to the board overview"}</span>
-        <span class="sm:hidden">{language === undefined ? "Overzicht" : "Overview"}</span>
+        <span class="hidden sm:inline">{language === "nl" ? "Terug naar het overzicht" : "Back to the board overview"}</span>
+        <span class="sm:hidden">{language === "nl" ? "Overzicht" : "Overview"}</span>
       </span>
     </a>
 
     {(prev_board || next_board) && (
       <div class="flex items-center gap-2 text-neutral-400 shrink-0">
         {prev_board && (
-          <a href={prev_board.href} aria-label={`${language === undefined ? "Vorig bestuur" : "Previous board"}: ${prev_board.number}`} class="group flex items-center gap-1.5">
+          <a href={prev_board.href} aria-label={`${language === "nl" ? "Vorig bestuur" : "Previous board"}: ${prev_board.number}`} class="group flex items-center gap-1.5">
             <i class="fas fa-arrow-left text-sm group-hover:-translate-x-0.5 transition-transform" aria-hidden="true"></i>
             <span class="board-pill" style={{ "background-color": prev_board.colour, color: prev_board.text }}>{prev_board.number}</span>
           </a>
         )}
         {prev_board && next_board && <span aria-hidden="true">·</span>}
         {next_board && (
-          <a href={next_board.href} aria-label={`${language === undefined ? "Volgend bestuur" : "Next board"}: ${next_board.number}`} class="group flex items-center gap-1.5">
+          <a href={next_board.href} aria-label={`${language === "nl" ? "Volgend bestuur" : "Next board"}: ${next_board.number}`} class="group flex items-center gap-1.5">
             <span class="board-pill" style={{ "background-color": next_board.colour, color: next_board.text }}>{next_board.number}</span>
             <i class="fas fa-arrow-right text-sm group-hover:translate-x-0.5 transition-transform" aria-hidden="true"></i>
           </a>
@@ -80,11 +78,11 @@ const next_board = navBoard(blok.board_number + 1);
         <div class="flex justify-between gap-2">
           <h1 class="text-2xl sm:text-3xl font-extrabold" style={{ color: blok.colour }}>
             {is_last
-              ? (language === undefined ? "Huidig bestuur" : "Current board")
-              : (language === undefined ? "Bestuur" : "Board")} {blok.board_number}
+              ? (language === "nl" ? "Huidig bestuur" : "Current board")
+              : (language === "nl" ? "Bestuur" : "Board")} {blok.boardNumber}
           </h1>
           <button data-color={blok.colour} id="board-color" class="shrink-0 self-start items-center rounded-lg sm:rounded-xl border border-neutral-200 px-2 py-1 text-sm sm:p-4 sm:text-base transition-colors hover:bg-neutral-50 active:bg-neutral-100 cursor-pointer">
-            <p style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> <span data-language={language} id="copy-text"><span class="hidden sm:inline">{(language === undefined ? "Bestuurskleur: " : "Board Color: ")}</span>{blok.colour}</span></p>
+            <p style={{ color: blok.colour }}><i class="fa-regular fa-copy"></i> <span data-language={language} id="copy-text"><span class="hidden sm:inline">{(language === "nl" ? "Bestuurskleur: " : "Board Color: ")}</span>{blok.colour}</span></p>
           </button>
         </div>
         {!!blok.year && <p class="text-neutral-500">{blok.year}</p>}
@@ -92,20 +90,20 @@ const next_board = navBoard(blok.board_number + 1);
   
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         <figure class="my-auto">
-          <Image src={blok.photo.filename} width={800} height={800} fit="contain" class="w-full h-auto rounded-xl" alt="Bestuursfoto" />
-          {!!blok.photo.title && <figcaption class="text-center text-neutral-600 mt-1">{blok.photo.title}</figcaption>}
+          <Image src={`${blok.photo.url}`} width={800} height={800} fit="contain" class="w-full h-auto rounded-xl" alt="Bestuursfoto" />
+          {!!blok.photo.alt && <figcaption class="text-center text-neutral-600 mt-1">{blok.photo.alt}</figcaption>}
         </figure>
   
         <div class="flex flex-col gap-6">
           <div>
-            <h3 class="text-xl font-extrabold mb-1" style={{ color: blok.colour }}>{language === undefined ? "O.d.z." : "Motto"}</h3>
+            <h3 class="text-xl font-extrabold mb-1" style={{ color: blok.colour }}>{language === "nl" ? "O.d.z." : "Motto"}</h3>
             <p class="italic">"{blok.zinspreuk}"</p>
           </div>
           <div>
             <h3 class="text-xl font-extrabold mb-1" style={{ color: blok.colour }}>
-              {language === undefined ? "Bestuursleden" : "Board members"}
+              {language === "nl" ? "Bestuursleden" : "Board members"}
             </h3>
-            <RichText content={blok.board_members} />
+            <RichText content={blok.boardMembers} />
           </div>
         </div>
       </div>
@@ -113,10 +111,10 @@ const next_board = navBoard(blok.board_number + 1);
       {!!blok.members?.length &&
         <div class="mt-10 flex flex-col gap-6">
           {blok.members.map((member: any, idx: number) => (
-            <a href={member.linkedin_url.cached_url} target="_blank" rel="noopener noreferrer" class="group block" {...storyblokEditable(member)}>
+            <a href={member.linkedinUrl.url} target="_blank" rel="noopener noreferrer" class="group block">
               <div class={`flex flex-col ${idx % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"} items-center gap-6 rounded-xl border border-neutral-200 p-4`}>
                 <Image
-                  src={member.photo.filename}
+                  src={`${member.photo.url}`}
                   height={128}
                   width={128}
                   alt={member.name}
@@ -137,12 +135,12 @@ const next_board = navBoard(blok.board_number + 1);
   </div>
 
   <script>
-    const el = document.querySelector('#board-color');
-    const textNode = document.querySelector('span#copy-text');
+    const el = document.querySelector('#board-color')! as HTMLElement;
+    const textNode = document.querySelector('span#copy-text')! as HTMLElement;
     const revertHTML = textNode.innerHTML;
-    let timeoutID = undefined;
+    let timeoutID: number | undefined = undefined;
     el.addEventListener('click', function() {
-      navigator.clipboard.writeText(el.dataset.color);
+      navigator.clipboard.writeText(el.dataset.color!);
       textNode.innerText = textNode.dataset.language === undefined ? "Gekopieerd!" : "Copied!";
 
       // If we're already waiting, stop waiting and start a new timeout
@@ -154,7 +152,7 @@ const next_board = navBoard(blok.board_number + 1);
       timeoutID = setTimeout(function () {
         textNode.innerHTML = revertHTML;
         timeoutID = undefined;
-      }, 1000);
+      }, 1000) as unknown as number;
     });
   </script>
 </main>

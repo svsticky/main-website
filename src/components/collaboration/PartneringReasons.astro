@@ -1,11 +1,10 @@
 ---
-import { storyblokEditable } from "@storyblok/astro";
-const { blok } = Astro.props;
+const blok = Astro.props;
 ---
 
-<ul class="grid grid-cols-1 sm:grid-cols-2 gap-8" {...storyblokEditable(blok)}>
+<ul class="grid grid-cols-1 sm:grid-cols-2 gap-8">
   {blok.reasons.map(reason => (
-    <li class="grid grid-cols-[2rem_auto] gap-2" {...storyblokEditable(reason)}>
+    <li class="grid grid-cols-[2rem_auto] gap-2">
       <div class="flex basis-0 bg-[var(--brand)]/20 h-8 rounded text-[var(--brand)] mt-1">
         <i class={`m-auto fas fa-${reason.icon}`}></i>
       </div>

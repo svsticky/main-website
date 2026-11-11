@@ -1,6 +1,6 @@
 ---
-import { storyblokEditable } from '@storyblok/astro';
-const { blok, language } = Astro.props;
+const { language } = Astro.props;
+const blok = Astro.props;
 
 function hexToRgb(hex: string) {
   const clean = (hex || '#000000').replace('#', '');
@@ -24,12 +24,11 @@ const cmyk = rgbToCmyk(rgb.r, rgb.g, rgb.b);
 
 <div
   class="flex flex-col sm:flex-row gap-4 items-center border border-neutral-200 rounded-xl overflow-hidden sm:h-40"
-  {...storyblokEditable(blok)}
 >
   <div class="w-full sm:w-40 h-24 sm:h-full shrink-0" style={{ background: blok.colour }}></div>
   <div class="flex flex-col gap-1 pb-4 sm:pb-0 my-auto">
     <span class="font-bold text-lg mb-1">
-      {language === undefined ? "Bestuurskleur" : "Board colour"}
+      {language === "nl" ? "Bestuurskleur" : "Board colour"}
     </span>
     <span>HEX: {blok.colour.toUpperCase()}</span>
     <span>RGB: {rgb.r}, {rgb.g}, {rgb.b}</span>
